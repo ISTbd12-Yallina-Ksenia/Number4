@@ -86,11 +86,8 @@ fig.suptitle("Использование библиотеки Matplotlib", y=0.9
 x=np.arange(1, N+1)
 for j in range(N):
     ax[0,0].plot(x, F[j])
-ax[0,0].set_xlabel("X")
-ax[0,0].set_ylabel("Y")
 ax[0,0].set_title("График с использованием функции plot")
 ax[0,0].set_xlabel("Номер элемента в строке")
-print("\n")
 ax[0,0].set_ylabel("Значение элемента матрицы F")
 for j in range(N):
     ax[0,0].plot(x, F[j], label=f'{j}строка')
