@@ -1,0 +1,115 @@
+##29. Формируется матрица F следующим образом: скопировать в нее А и  если в С количество нулей в нечетных столбцах больше,
+##чем сумма чисел по периметру , то поменять местами С и В симметрично, иначе С и Е поменять местами несимметрично. При этом
+##матрица А не меняется. После чего если определитель матрицы А больше суммы диагональных элементов матрицы F,то вычисляется
+##выражение:A-1*AT – K * F-1, иначе вычисляется выражение (A +G-1-F-1)*K, где G-нижняя треугольная матрица, полученная из А.
+##Выводятся по мере формирования А, F и все матричные операции последовательно.
+##E B
+##D C
+import numpy as np
+from matplotlib import pyplot as plt
+np.set_printoptions(precision = 2, suppress = True) #кол-во знаков после запятой
+K=int(input("Введите число K="))
+N=int(input("Введите натуральное число N="))
+A=np.random.randint(-10,10, size=(N,N))
+print("Матрица A", A, sep="\n")
+F=A.copy()
+isEven = True if N%2==0 else False #Проверка порядка матрицы на четность
+middle = N // 2 
+matrix_G=np.array([[ 0 if j in range(i+1, N) and i in range(N-1) else A[i][j]for j in range(N)]for i in range(N)]) #треугольная матрица G из матрицы A
+Number=0 #Количество нулей 
+Sum=0 #Сумма по периметру
+m=0 if isEven==True else 1 #необходим для отслеживания границ подматриц. При N - нечетное границы не включаем ни в одну из подматриц
+for i in range(middle+m, N): #Количество нулей в нечетных столбцах подматрицы C
+    for j in range(middle+m, N):
+        if str(F[i][j]).__contains__('0') and j%2!=0:
+            Number+=1            
+for j in range(middle+m, N): #Сумма чисел по периметру подматрицы C
+    Sum+=F[middle+m][j]+F[N-1][j]
+for i in range(middle+m+1, N-1):
+    Sum+=F[i][middle+m+1]+F[i][N-1]
+if Number>Sum: #меняем B и C местами симметрично
+    p=N-1 #последняя строка
+    for i in range(middle): #симметрично  меняем B и C местами
+        for j in range(middle+m, N):
+            F[i][j], F[p][j]=F[p][j], F[i][j] 
+        p=p-1
+    print("В матрице F подматрицы B и C поменялись местами симметрично. Матрица F выведена ниже", F, sep="\n")
+else:# меняем E и C местами несимметрично. Границы четкие и непересекающиеся, если матрица четная. Если нечетная, то граница ни в одну подматрицу не входит
+    for i in range(middle):
+        for j in range(middle):
+            F[i][j], F[i+middle+m][j+middle+m]=F[i+middle+m][j+middle+m], F[i][j]
+    print("В матрице F подматрицы E и C поменялись местами несимметрично. Матрица F выведена ниже", F, sep="\n")
+Diagonal=np.trace(F) #сумма диагональных элементов 
+Determinant=round(np.linalg.det(A)) #определитель матрицы A
+if Determinant>Diagonal: #определитель матрицы A больше суммы диагональных элементов матрицы F
+    print("Определитель матрицы A больше суммы диагональных элементов матрицы F. Вычисление A^(-1)*AT - K*F^(-1)")
+    if Determinant!=0 or round(np.linalg.det(F))!=0: #учитываем возможные случаи, когда (не)существуют обратные матрицы или одна из них
+        print("Транспонирование матрицы A", A.transpose(), sep='\n')
+        if Determinant!=0:
+            ReA=np.array([[round(np.linalg.inv(A)[i][j], 2) for j in range(N)] for i in range(N)])
+            print("Матрица, обратная к матрице A: A^(-1)", ReA, sep='\n')
+            ReAT=ReA*A.transpose()
+            print("Умножение матрицы, обратной к A, на транспонированную матрицу AT", ReAT, sep='\n')
+            if round(np.linalg.det(F))==0: print("Матрицы, обратной к F, не существует, дальнейшие вычисления невозможны")
+        if round(np.linalg.det(F))!=0:
+            ReF=np.array([[round(np.linalg.inv(F)[i][j], 2) for j in range(N)] for i in range(N)])
+            print("Матрица, обратная к матрице F: F^(-1)", ReF, sep='\n')
+            KReF=K*ReF
+            print("Умножение числа K на матрицу F^(-1)", KReF, sep='\n')
+            if Determinant==0: print("Матрицы, обратной к A, не существует, дальнейшие вычисления невозможны")
+        if Determinant!=0 and round(np.linalg.det(F))!=0:
+            print("Вычисление A^(-1)*AT - K*F^(-1)", ReAT-KReF, sep='\n')
+    else:
+        print("У матриц A и B не существует обратных матриц, не удается вычислить выражение A^(-1)*AT - K*F^(-1)")
+else:#определитель матрицы A меньше суммы диагональных элементов матрицы F
+    print("Определитель матрицы A меньше суммы диагональных элементов матрицы F.Вычисление (A+G^(-1)-F^(-1))*K")
+    if round(np.linalg.det(matrix_G))!=0 or round(np.linalg.det(F))!=0: #также учитываем, что одна из обратных матриц может не существовать во избежание ошибки
+        if round(np.linalg.det(matrix_G))!=0:
+            ReG=np.array([[round(np.linalg.inv(matrix_G)[i][j], 2) for j in range(N)] for i in range(N)])
+            print("Матрица, обратная к матрице G: G^(-1)", ReG, sep='\n')
+            if round(np.linalg.det(F))==0: print("Вычисление A+G^(-1)", A+ReG, "Вычисление(A+ReG)*K, у F нет обратной матрицы", (A+ReG)*K, sep='\n') 
+        if round(np.linalg.det(F))!=0:
+            ReF=np.array([[round(np.linalg.inv(F)[i][j], 2) for j in range(N)] for i in range(N)])
+            print("Матрица, обратная к матрице F: F^(-1)", ReF, sep='\n')
+            if round(np.linalg.det(matrix_G))==0: print("Вычисление A-F^(-1)", A-ReF, "Вычисление(A-F^(-1))*K, у G нет обратной матрицы", (A-ReF)*K, sep='\n') 
+        if round(np.linalg.det(matrix_G))!=0 and round(np.linalg.det(F))!=0:
+            print("Вычисление A+G^(-1)", A+ReG, sep="\n")
+            print("Вычисление A+G^(-1)-F^(-1)", A+ReG-ReF, sep='\n')
+            print("Вычисление (A+G^(-1)-F^(-1))*K", (A+ReG-ReF)*K, sep='\n' )
+    else:   
+        print("Вычисление A*K, у матриц F и G не существует обратных матриц", A*K, sep='\n')
+print("Конец")
+#Работа с графиками
+fig,ax=plt.subplots(2, 2, figsize=(11, 7)) #создание областей
+fig.tight_layout(pad=3.5, w_pad=3,h_pad=4)#расстояние от границ и между областями
+fig.suptitle("Использование библиотеки Matplotlib", y=0.99)
+x=np.arange(1, N+1)
+for j in range(N):
+    ax[0,0].plot(x, F[j])
+ax[0,0].set_xlabel("X")
+ax[0,0].set_ylabel("Y")
+ax[0,0].set_title("График с использованием функции plot")
+ax[0,0].set_xlabel("Номер элемента в строке")
+print("\n")
+ax[0,0].set_ylabel("Значение элемента матрицы F")
+for j in range(N):
+    ax[0,0].plot(x, F[j], label=f'{j}строка')
+ax[0,0].legend()
+for j in range(N):
+    ax[0,1].bar(x, F[j], label=f'{j}строка')
+ax[0,1].legend()
+ax[0,1].set_title("График с использованием функции bar")
+ax[0,1].set_xlabel("Номер элемента в строке")
+ax[0,1].set_ylabel("Значение элемента матрицы F")
+P=[]
+for i in range(N):
+    P.append(abs(F[1][i]))
+ax[1,0].pie(P, labels=x,autopct='%1.1f%%', shadow=True)
+ax[1,0].set_title("График с использованием функции pie")
+im = ax[1,1].imshow(F, cmap='Spectral')
+ax[1,1].set_title("Аннотированная тепловая карта")
+cbar = ax[1,1].figure.colorbar(im, shrink=1.0)
+for i in range(len(F[0])):
+    for j in range(len(F[0])):
+        ax[1,1].text(j, i, F[i][j],horizontalalignment='center', verticalalignment='center' )
+plt.show()
