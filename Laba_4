@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 np.set_printoptions(precision = 2, suppress = True) #кол-во знаков после запятой
 K=int(input("Введите число K="))
-N=int(input("Введите натуральное число N="))
+N=int(input("Введите натуральное число N, больше, чем 1: "))
 A=np.random.randint(-10,10, size=(N,N))
 print("Матрица A", A, sep="\n")
 F=A.copy()
